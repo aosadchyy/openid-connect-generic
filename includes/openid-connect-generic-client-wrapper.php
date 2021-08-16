@@ -452,6 +452,12 @@ class OpenID_Connect_Generic_Client_Wrapper {
 		// Allow for other plugins to alter data before validation.
 		$token_response = apply_filters( 'openid-connect-modify-token-response-before-validation', $token_response );
 
+		if ( ! isset( $token_response['id_token'] )) {
+			// When missing, obtain id_token from user_claim and append it to the $token_response.
+			$sub = $client->get_user_claim( $token_response )["sub"];
+			$token_response['id_token'] = '.'.base64_encode(json_encode ( array("sub" => $sub)));
+		}
+
 		if ( is_wp_error( $token_response ) ) {
 			$this->error_redirect( $token_response );
 		}
